@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 1. Cadastro de instâncias de bancos de dados
+model DatabaseConnection {
+  id           Int      @id @default(autoincrement())
+  name         String
+  driver       String // mysql | postgres | mssql
+  host         String
+  port         Int
+  username     String
+  password     String
+  databaseName String   @map("database_name")
+  schema       String   @default("public")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relações reversas
+  sourceSteps IntegrationStep[] @relation("SourceConnection")
+  targetSteps IntegrationStep[] @relation("TargetConnection")
+
+  @@map("database_connections")
+}
+
+// 2. Definição do Job de Integração
+model Integration {
+  id             Int       @id @default(autoincrement())
+  name           String
+  description    String?
+  cronExpression String    @map("cron_expression")
+  isActive       Boolean   @default(true) @map("is_active")
+  lastRun        DateTime? @map("last_run")
+
+  steps IntegrationStep[]
+  logs  IntegrationLog[]
+
+  @@map("integrations")
+}
+
+// 3. Pilha de execução (Steps)
+model IntegrationStep {
+  id Int @id @default(autoincrement())
+
+  // Relacionamento com o Job Pai
+  integrationId Int         @map("integration_id")
+  integration   Integration @relation(fields: [integrationId], references: [id])
+
+  // Extração (Origem)
+  sourceConnectionId Int                @map("source_connection_id")
+  sourceConnection   DatabaseConnection @relation("SourceConnection", fields: [sourceConnectionId], references: [id])
+  sourceQuery        String             @map("source_query") @db.Text
+
+  // Carga (Destino)
+  targetConnectionId Int                @map("target_connection_id")
+  targetConnection   DatabaseConnection @relation("TargetConnection", fields: [targetConnectionId], references: [id])
+  targetQuery        String             @map("target_query") @db.Text
+
+  // Controle de Execução
+  executionOrder Int @map("execution_order")
+  batchSize      Int @default(1000) @map("batch_size")
+
+  @@map("integration_steps")
+}
+
+// 4. Logs de Execução
+model IntegrationLog {
+  id            Int         @id @default(autoincrement())
+  integrationId Int         @map("integration_id")
+  integration   Integration @relation(fields: [integrationId], references: [id])
+  status        String // SUCCESS | FAILURE
+  startTime     DateTime    @default(now()) @map("start_time")
+  endTime       DateTime?   @map("end_time")
+  message       String?     @db.Text
+
+  @@map("integration_logs")
+}
