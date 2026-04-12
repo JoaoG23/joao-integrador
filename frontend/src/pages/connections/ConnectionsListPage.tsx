@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import api from "../../api/api";
 import { Button } from "../../components/ui/button";
@@ -11,9 +11,10 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { Plus, Database } from "lucide-react";
+import { Plus, Database, Pencil, Trash2 } from "lucide-react";
 
 export function ConnectionsListPage() {
+  const queryClient = useQueryClient();
   const { data: connections, isLoading } = useQuery({
     queryKey: ["connections"],
     queryFn: async () => {
@@ -21,6 +22,21 @@ export function ConnectionsListPage() {
       return response.data;
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await api.delete(`/connections/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["connections"] });
+    },
+  });
+
+  const handleDelete = (id: number) => {
+    if (window.confirm("Are you sure you want to delete this connection?")) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -52,6 +68,7 @@ export function ConnectionsListPage() {
                   <TableHead>Host</TableHead>
                   <TableHead>Database</TableHead>
                   <TableHead>Schema</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -62,11 +79,27 @@ export function ConnectionsListPage() {
                     <TableCell>{conn.host}:{conn.port}</TableCell>
                     <TableCell>{conn.databaseName}</TableCell>
                     <TableCell>{conn.schema}</TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button size="sm" variant="outline" asChild>
+                        <Link to={`/connections/${conn.id}/edit`}>
+                          <Pencil className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => handleDelete(conn.id)}
+                        disabled={deleteMutation.isPending}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
                 {connections?.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
+                    <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
                       No connections found. Add your first connection to get started.
                     </TableCell>
                   </TableRow>

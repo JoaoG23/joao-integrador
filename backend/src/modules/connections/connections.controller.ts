@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { DatabaseConnectionsService } from './connections.service';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateConnectionDto } from './dto/create-connection.dto';
+import { UpdateConnectionDto } from './dto/update-connection.dto';
 
 @ApiTags('connections')
 @Controller('connections')
@@ -35,5 +36,26 @@ export class DatabaseConnectionsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(+id);
+  }
+
+  /**
+   * Update an existing database connection configuration.
+   * @param id The ID of the connection to update.
+   * @param data The new connection data.
+   * @returns The updated connection record.
+   */
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() data: UpdateConnectionDto) {
+    return this.service.update(+id, data);
+  }
+
+  /**
+   * Remove a database connection from the system.
+   * @param id The database connection ID.
+   * @returns The deleted connection record.
+   */
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.service.remove(+id);
   }
 }

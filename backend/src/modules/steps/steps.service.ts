@@ -15,4 +15,23 @@ export class IntegrationStepsService {
       orderBy: { executionOrder: 'asc' },
     });
   }
+
+  async findOne(id: number) {
+    return this.prisma.integrationStep.findUnique({
+      where: { id },
+    });
+  }
+
+  async update(id: number, data: any) {
+    return this.prisma.integrationStep.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async remove(id: number) {
+    return this.prisma.integrationStep.delete({
+      where: { id },
+    });
+  }
 }

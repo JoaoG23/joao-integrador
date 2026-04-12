@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { IntegrationsService } from './integrations.service';
 import { ApiTags } from '@nestjs/swagger';
 
 import { CreateIntegrationDto } from './dto/create-integration.dto';
+import { UpdateIntegrationDto } from './dto/update-integration.dto';
 
 @ApiTags('integrations')
 @Controller('integrations')
@@ -36,6 +37,27 @@ export class IntegrationsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(+id);
+  }
+
+  /**
+   * Update an existing integration job.
+   * @param id The integration ID.
+   * @param data The new integration data.
+   * @returns The updated integration record.
+   */
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() data: UpdateIntegrationDto) {
+    return this.service.update(+id, data);
+  }
+
+  /**
+   * Remove an integration job and its schedule.
+   * @param id The integration ID.
+   * @returns The deleted integration record.
+   */
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.service.remove(+id);
   }
 
   /**

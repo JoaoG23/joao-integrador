@@ -20,6 +20,7 @@ describe('CronService', () => {
   const mockPrismaService = {
     integration: {
       findMany: jest.fn(),
+      findUnique: jest.fn(),
     },
   };
 
@@ -101,6 +102,32 @@ describe('CronService', () => {
         `integration_${integration.id}`,
         expect.anything()
       );
+    });
+  });
+
+  describe('stopCronJob', () => {
+    it('should stop an existing job', () => {
+      const integrationId = 123;
+      const mockJob = { stop: jest.fn() };
+      mockSchedulerRegistry.getCronJob.mockReturnValue(mockJob);
+
+      service.stopCronJob(integrationId);
+
+      expect(mockSchedulerRegistry.getCronJob).toHaveBeenCalledWith(`integration_${integrationId}`);
+      expect(mockJob.stop).toHaveBeenCalled();
+    });
+  });
+
+  describe('startCronJob', () => {
+    it('should restart an active integration', async () => {
+      const integrationId = 123;
+      const integration = { id: integrationId, cronExpression: '* * * * *', isActive: true };
+      mockPrismaService.integration.findUnique.mockResolvedValue(integration);
+
+      await service.startCronJob(integrationId);
+
+      expect(mockPrismaService.integration.findUnique).toHaveBeenCalledWith({ where: { id: integrationId } });
+      expect(mockSchedulerRegistry.addCronJob).toHaveBeenCalled();
     });
   });
 });

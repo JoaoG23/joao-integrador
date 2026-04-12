@@ -2,36 +2,55 @@ import * as mysql from 'mysql2/promise';
 import { IDatabaseAdapter } from './database-adapter.interface';
 
 export class MysqlAdapter implements IDatabaseAdapter {
-  private connection: mysql.Connection;
+  private static pools = new Map<string, mysql.Pool>();
+  private currentPool: mysql.Pool;
 
   constructor(private config: any) {
+    const key = this.generateKey(config);
+    if (!MysqlAdapter.pools.has(key)) {
+      MysqlAdapter.pools.set(
+        key,
+        mysql.createPool({
+          host: config.host,
+          port: config.port,
+          user: config.username,
+          password: config.password,
+          database: config.databaseName,
+          waitForConnections: true,
+          connectionLimit: 10,
+          queueLimit: 0,
+        }),
+      );
+    }
+    this.currentPool = MysqlAdapter.pools.get(key)!;
   }
 
   async connect(): Promise<void> {
-    this.connection = await mysql.createConnection({
-      host: this.config.host,
-      port: this.config.port,
-      user: this.config.username,
-      password: this.config.password,
-      database: this.config.databaseName,
-    });
+    // No pooling o connect é implícito
   }
 
   async executeSelect(query: string): Promise<any[]> {
-    const [rows] = await this.connection.execute(query);
+    const [rows] = await this.currentPool.execute(query);
     return rows as any[];
   }
 
   async executeCommand(query: string, data: any): Promise<void> {
     const { transformedQuery, values } = this.transformQuery(query, data);
-    await this.connection.execute(transformedQuery, values);
+    await this.currentPool.execute(transformedQuery, values);
   }
 
   async disconnect(): Promise<void> {
-    await this.connection.end();
+    // No-op: mantemos o pool para o próximo step
   }
 
-  private transformQuery(query: string, data: any): { transformedQuery: string; values: any[] } {
+  private generateKey(config: any): string {
+    return `${config.host}:${config.port}:${config.databaseName}:${config.username}`;
+  }
+
+  private transformQuery(
+    query: string,
+    data: any,
+  ): { transformedQuery: string; values: any[] } {
     const values: any[] = [];
     const transformedQuery = query.replace(/:(\w+)/g, (_, key) => {
       values.push(data[key]);

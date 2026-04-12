@@ -11,6 +11,8 @@ describe('DatabaseConnectionsService', () => {
       create: jest.fn(),
       findMany: jest.fn(),
       findUnique: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
     },
   };
 
@@ -68,6 +70,34 @@ describe('DatabaseConnectionsService', () => {
       const result = await service.findOne(id);
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('update', () => {
+    it('should update a database connection', async () => {
+      const id = 1;
+      const updateData = { name: 'Updated Name' };
+      mockPrismaService.databaseConnection.update.mockResolvedValue({ id, ...updateData });
+
+      const result = await service.update(id, updateData);
+
+      expect(mockPrismaService.databaseConnection.update).toHaveBeenCalledWith({
+        where: { id },
+        data: updateData,
+      });
+      expect(result.name).toBe('Updated Name');
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove a database connection', async () => {
+      const id = 1;
+      mockPrismaService.databaseConnection.delete.mockResolvedValue({ id });
+
+      const result = await service.remove(id);
+
+      expect(mockPrismaService.databaseConnection.delete).toHaveBeenCalledWith({ where: { id } });
+      expect(result.id).toBe(id);
     });
   });
 });

@@ -14,6 +14,8 @@ describe('IntegrationsService', () => {
       create: jest.fn(),
       findMany: jest.fn(),
       findUnique: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
     },
   };
 
@@ -23,6 +25,7 @@ describe('IntegrationsService', () => {
 
   const mockCronService = {
     addCronJob: jest.fn(),
+    deleteCronJob: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -88,6 +91,41 @@ describe('IntegrationsService', () => {
         include: { steps: true, logs: true },
       });
       expect(result).toEqual(mockResult);
+    });
+  });
+
+  describe('update', () => {
+    it('should update integration and add to cron if active', async () => {
+      const id = 1;
+      const data = { isActive: true };
+      mockPrismaService.integration.update.mockResolvedValue({ id, isActive: true });
+
+      await service.update(id, data);
+
+      expect(mockPrismaService.integration.update).toHaveBeenCalledWith({ where: { id }, data });
+      expect(mockCronService.addCronJob).toHaveBeenCalled();
+    });
+
+    it('should update integration and delete from cron if inactive', async () => {
+      const id = 1;
+      const data = { isActive: false };
+      mockPrismaService.integration.update.mockResolvedValue({ id, isActive: false });
+
+      await service.update(id, data);
+
+      expect(mockCronService.deleteCronJob).toHaveBeenCalledWith(id);
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove integration and delete from cron', async () => {
+      const id = 1;
+      mockPrismaService.integration.delete.mockResolvedValue({ id });
+
+      await service.remove(id);
+
+      expect(mockCronService.deleteCronJob).toHaveBeenCalledWith(id);
+      expect(mockPrismaService.integration.delete).toHaveBeenCalledWith({ where: { id } });
     });
   });
 });

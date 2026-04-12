@@ -53,4 +53,38 @@ export class CronService implements OnModuleInit {
     job.start();
     this.logger.log(`Job ${jobName} scheduled with expression: ${integration.cronExpression}`);
   }
+
+  deleteCronJob(integrationId: number) {
+    const jobName = `integration_${integrationId}`;
+    try {
+      this.schedulerRegistry.deleteCronJob(jobName);
+      this.logger.log(`Job ${jobName} deleted`);
+    } catch (e) {
+      // Ignore if doesn't exist
+    }
+  }
+
+  stopCronJob(integrationId: number) {
+    const jobName = `integration_${integrationId}`;
+    try {
+      const job = this.schedulerRegistry.getCronJob(jobName);
+      job.stop();
+      this.logger.log(`Job ${jobName} stopped`);
+    } catch (e) {
+      this.logger.error(`Failed to stop job ${jobName}: ${e.message}`);
+    }
+  }
+
+  async startCronJob(integrationId: number) {
+    const integration = await this.prisma.integration.findUnique({
+      where: { id: integrationId },
+    });
+
+    if (!integration || !integration.isActive) {
+      this.logger.warn(`Cannot start job ${integrationId}: Integration not found or inactive`);
+      return;
+    }
+
+    this.addCronJob(integration);
+  }
 }

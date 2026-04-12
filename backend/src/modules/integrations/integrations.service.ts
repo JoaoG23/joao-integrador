@@ -32,6 +32,28 @@ export class IntegrationsService {
     });
   }
 
+  async update(id: number, data: any) {
+    const integration = await this.prisma.integration.update({
+      where: { id },
+      data,
+    });
+
+    if (integration.isActive) {
+      this.cron.addCronJob(integration);
+    } else {
+      this.cron.deleteCronJob(id);
+    }
+
+    return integration;
+  }
+
+  async remove(id: number) {
+    this.cron.deleteCronJob(id);
+    return this.prisma.integration.delete({
+      where: { id },
+    });
+  }
+
   async run(id: number) {
     return this.orchestrator.runIntegration(id);
   }

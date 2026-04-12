@@ -72,3 +72,38 @@ O comando de UPSERT depende do banco de dados de destino sendo utilizado:
 *   **Batch Size:** Você pode configurar o `batchSize` no Step para controlar quantos registros são processados por vez. O padrão é 1000.
 *   **Aliasing:** Se a coluna na origem tem um nome diferente do que você quer usar no placeholder, use aliases no SQL:
     `SELECT user_full_name AS nome FROM users` -> Use `:nome` no destino.
+
+---
+
+## 4. Monitoramento de Conexões (Pooling)
+
+O sistema utiliza **Connection Pooling** para reaproveitar conexões entre os passos (steps) de uma integração, reduzindo o overhead de conexão. Para validar e monitorar o uso de conexões em cada banco, utilize as queries abaixo:
+
+### **PostgreSQL**
+```sql
+-- Contagem de conexões por banco
+SELECT count(*) FROM pg_stat_activity WHERE datname = 'NOME_DO_BANCO';
+
+-- Detalhes das conexões ativas
+SELECT usename, state, query FROM pg_stat_activity WHERE datname = 'NOME_DO_BANCO';
+```
+
+### **MySQL**
+```sql
+-- Ver todas as conexões
+SHOW PROCESSLIST;
+
+-- Contagem por banco
+SELECT count(*) FROM information_schema.processlist WHERE db = 'NOME_DO_BANCO';
+```
+
+### **SQL Server (MSSQL)**
+```sql
+-- Contagem de sessões ativas
+SELECT count(*) FROM sys.dm_exec_sessions WHERE database_id = DB_ID('NOME_DO_BANCO');
+
+-- Detalhes das sessões
+SELECT session_id, login_name, status, last_request_end_time 
+FROM sys.dm_exec_sessions 
+WHERE database_id = DB_ID('NOME_DO_BANCO');
+```

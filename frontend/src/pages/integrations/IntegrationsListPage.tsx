@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { Plus, Zap, Play, Settings } from "lucide-react";
+import { Plus, Zap, Play, Settings, Trash2 } from "lucide-react";
 
 export function IntegrationsListPage() {
   const queryClient = useQueryClient();
@@ -33,6 +33,21 @@ export function IntegrationsListPage() {
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await api.delete(`/integrations/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+    },
+  });
+
+  const handleDelete = (id: number) => {
+    if (window.confirm("Are you sure you want to delete this integration? All its steps and logs will be lost.")) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -89,15 +104,26 @@ export function IntegrationsListPage() {
                       <Button 
                         size="sm" 
                         variant="outline"
+                        title="Run Now"
                         onClick={() => runMutation.mutate(integration.id)}
                         disabled={runMutation.isPending}
                       >
                         <Play className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="outline" asChild>
+                      <Button size="sm" variant="outline" title="Details & Steps" asChild>
                         <Link to={`/integrations/${integration.id}`}>
                           <Settings className="h-4 w-4" />
                         </Link>
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        title="Delete"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => handleDelete(integration.id)}
+                        disabled={deleteMutation.isPending}
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -117,3 +143,4 @@ export function IntegrationsListPage() {
     </div>
   );
 }
+

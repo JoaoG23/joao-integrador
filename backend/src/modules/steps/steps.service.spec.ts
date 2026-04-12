@@ -10,6 +10,9 @@ describe('IntegrationStepsService', () => {
     integrationStep: {
       create: jest.fn(),
       findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
     },
   };
 
@@ -71,6 +74,44 @@ describe('IntegrationStepsService', () => {
         orderBy: { executionOrder: 'asc' },
       });
       expect(result).toEqual(mockSteps);
+    });
+  });
+
+  describe('findOne', () => {
+    it('should find step by id', async () => {
+      const id = 1;
+      const mockStep = { id, integrationId: 1 };
+      mockPrismaService.integrationStep.findUnique.mockResolvedValue(mockStep);
+
+      const result = await service.findOne(id);
+
+      expect(mockPrismaService.integrationStep.findUnique).toHaveBeenCalledWith({ where: { id } });
+      expect(result).toEqual(mockStep);
+    });
+  });
+
+  describe('update', () => {
+    it('should update a step', async () => {
+      const id = 1;
+      const data = { sourceQuery: 'SELECT 2' };
+      mockPrismaService.integrationStep.update.mockResolvedValue({ id, ...data });
+
+      const result = await service.update(id, data);
+
+      expect(mockPrismaService.integrationStep.update).toHaveBeenCalledWith({ where: { id }, data });
+      expect(result.sourceQuery).toBe('SELECT 2');
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove a step', async () => {
+      const id = 1;
+      mockPrismaService.integrationStep.delete.mockResolvedValue({ id });
+
+      const result = await service.remove(id);
+
+      expect(mockPrismaService.integrationStep.delete).toHaveBeenCalledWith({ where: { id } });
+      expect(result.id).toBe(id);
     });
   });
 });

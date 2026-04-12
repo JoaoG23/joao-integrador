@@ -1,10 +1,11 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 import api from "../../api/api";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
-import { Textarea } from "../../components/ui/textarea";
+import { SqlTextarea } from "./SqlTextarea";
 import {
   Table,
   TableBody,
@@ -29,11 +30,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
-import { Play, Plus, ListTree, History } from "lucide-react";
+import { Play, Plus, ListTree, History, Pencil, Trash2, X } from "lucide-react";
 
 export function IntegrationDetailsPage() {
   const { id } = useParams();
   const queryClient = useQueryClient();
+  const [editingStepId, setEditingStepId] = useState<number | null>(null);
 
   const { data: integration, isLoading: isIntegrationLoading } = useQuery({
     queryKey: ["integration", id],
@@ -62,14 +64,28 @@ export function IntegrationDetailsPage() {
     },
   });
 
-  const addStepMutation = useMutation({
+  const stepMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await api.post(`/integrations/${id}/steps`, data);
-      return response.data;
+      if (editingStepId) {
+        const response = await api.patch(`/integrations/${id}/steps/${editingStepId}`, data);
+        return response.data;
+      } else {
+        const response = await api.post(`/integrations/${id}/steps`, data);
+        return response.data;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["integration", id] });
-      stepForm.reset();
+      handleCancelEdit();
+    },
+  });
+
+  const deleteStepMutation = useMutation({
+    mutationFn: async (stepId: number) => {
+      await api.delete(`/integrations/${id}/steps/${stepId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["integration", id] });
     },
   });
 
@@ -84,13 +100,43 @@ export function IntegrationDetailsPage() {
     },
   });
 
-  function onAddStep(data: any) {
+  function onStepSubmit(data: any) {
     data.sourceConnectionId = Number(data.sourceConnectionId);
     data.targetConnectionId = Number(data.targetConnectionId);
     data.executionOrder = Number(data.executionOrder);
     data.batchSize = Number(data.batchSize);
-    addStepMutation.mutate(data);
+    stepMutation.mutate(data);
   }
+
+  const handleEditStep = (step: any) => {
+    setEditingStepId(step.id);
+    stepForm.reset({
+      sourceConnectionId: step.sourceConnectionId.toString(),
+      sourceQuery: step.sourceQuery,
+      targetConnectionId: step.targetConnectionId.toString(),
+      targetQuery: step.targetQuery,
+      executionOrder: step.executionOrder,
+      batchSize: step.batchSize,
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingStepId(null);
+    stepForm.reset({
+      sourceConnectionId: "",
+      sourceQuery: "",
+      targetConnectionId: "",
+      targetQuery: "",
+      executionOrder: 1,
+      batchSize: 1000,
+    });
+  };
+
+  const handleDeleteStep = (stepId: number) => {
+    if (window.confirm("Are you sure you want to delete this step?")) {
+      deleteStepMutation.mutate(stepId);
+    }
+  };
 
   if (isIntegrationLoading) return <div>Loading integration details...</div>;
 
@@ -109,9 +155,16 @@ export function IntegrationDetailsPage() {
             </span>
           </div>
         </div>
-        <Button onClick={() => runMutation.mutate()} disabled={runMutation.isPending}>
-          <Play className="mr-2 h-4 w-4" /> Run Now
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link to={`/integrations/${id}/edit`}>
+              <Pencil className="mr-2 h-4 w-4" /> Edit
+            </Link>
+          </Button>
+          <Button onClick={() => runMutation.mutate()} disabled={runMutation.isPending}>
+            <Play className="mr-2 h-4 w-4" /> Run Now
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -132,6 +185,7 @@ export function IntegrationDetailsPage() {
                     <TableHead>Source</TableHead>
                     <TableHead>Target</TableHead>
                     <TableHead>Batch</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -140,22 +194,35 @@ export function IntegrationDetailsPage() {
                       <TableCell className="font-bold">{step.executionOrder}</TableCell>
                       <TableCell>
                         <div className="text-xs text-muted-foreground mb-1">Conn ID: {step.sourceConnectionId}</div>
-                        <code className="text-[10px] block max-w-[200px] truncate" title={step.sourceQuery}>
+                        <code className="text-[10px] block max-w-[150px] truncate" title={step.sourceQuery}>
                           {step.sourceQuery}
                         </code>
                       </TableCell>
                       <TableCell>
                         <div className="text-xs text-muted-foreground mb-1">Conn ID: {step.targetConnectionId}</div>
-                        <code className="text-[10px] block max-w-[200px] truncate" title={step.targetQuery}>
+                        <code className="text-[10px] block max-w-[150px] truncate" title={step.targetQuery}>
                           {step.targetQuery}
                         </code>
                       </TableCell>
                       <TableCell>{step.batchSize}</TableCell>
+                      <TableCell className="text-right space-x-1">
+                        <Button size="sm" variant="ghost" onClick={() => handleEditStep(step)}>
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => handleDeleteStep(step.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                   {integration.steps?.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">
+                      <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
                         No steps defined for this integration.
                       </TableCell>
                     </TableRow>
@@ -217,24 +284,32 @@ export function IntegrationDetailsPage() {
           </Card>
         </div>
 
-        {/* Add Step Form */}
+        {/* Step Form */}
         <div>
           <Card className="sticky top-8">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Plus className="h-4 w-4" /> Add Step
+              <CardTitle className="flex items-center justify-between gap-2 text-lg">
+                <div className="flex items-center gap-2">
+                  {editingStepId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  {editingStepId ? "Update Step" : "Add Step"}
+                </div>
+                {editingStepId && (
+                  <Button variant="ghost" size="sm" onClick={handleCancelEdit}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...stepForm}>
-                <form onSubmit={stepForm.handleSubmit(onAddStep)} className="space-y-4">
+                <form onSubmit={stepForm.handleSubmit(onStepSubmit)} className="space-y-4">
                   <FormField
                     control={stepForm.control}
                     name="sourceConnectionId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Source Connection</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select source" />
@@ -258,7 +333,7 @@ export function IntegrationDetailsPage() {
                       <FormItem>
                         <FormLabel>Source Query (SELECT)</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <SqlTextarea 
                             placeholder="SELECT * FROM table" 
                             className="font-mono text-xs h-32" 
                             {...field} 
@@ -275,7 +350,7 @@ export function IntegrationDetailsPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Target Connection</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select target" />
@@ -299,7 +374,7 @@ export function IntegrationDetailsPage() {
                       <FormItem>
                         <FormLabel>Target Query (INSERT/UPDATE)</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <SqlTextarea 
                             placeholder="INSERT INTO table VALUES (:col)" 
                             className="font-mono text-xs h-32" 
                             {...field} 
@@ -339,9 +414,15 @@ export function IntegrationDetailsPage() {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={addStepMutation.isPending}>
-                    {addStepMutation.isPending ? "Adding..." : "Add Step"}
+                  <Button type="submit" className="w-full" disabled={stepMutation.isPending}>
+                    {stepMutation.isPending ? (editingStepId ? "Updating..." : "Adding...") : (editingStepId ? "Update Step" : "Add Step")}
                   </Button>
+                  
+                  {editingStepId && (
+                    <Button type="button" variant="outline" className="w-full" onClick={handleCancelEdit}>
+                      Cancel
+                    </Button>
+                  )}
                 </form>
               </Form>
             </CardContent>
