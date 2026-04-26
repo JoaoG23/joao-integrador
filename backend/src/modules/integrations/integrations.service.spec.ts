@@ -88,7 +88,12 @@ describe('IntegrationsService', () => {
 
       expect(mockPrismaService.integration.findUnique).toHaveBeenCalledWith({
         where: { id },
-        include: { steps: true, logs: true },
+        include: {
+          steps: true,
+          logs: {
+            orderBy: { startTime: 'desc' },
+          },
+        },
       });
       expect(result).toEqual(mockResult);
     });
