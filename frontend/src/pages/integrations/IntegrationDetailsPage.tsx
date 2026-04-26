@@ -14,7 +14,12 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
 import {
   Form,
   FormControl,
@@ -67,7 +72,10 @@ export function IntegrationDetailsPage() {
   const stepMutation = useMutation({
     mutationFn: async (data: any) => {
       if (editingStepId) {
-        const response = await api.patch(`/integrations/${id}/steps/${editingStepId}`, data);
+        const response = await api.patch(
+          `/integrations/${id}/steps/${editingStepId}`,
+          data,
+        );
         return response.data;
       } else {
         const response = await api.post(`/integrations/${id}/steps`, data);
@@ -144,13 +152,22 @@ export function IntegrationDetailsPage() {
     <div className="space-y-8">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{integration.name}</h1>
-          <p className="text-muted-foreground mt-1">{integration.description}</p>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {integration.name}
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {integration.description}
+          </p>
           <div className="mt-2 flex gap-4 text-sm">
             <span className="flex items-center gap-1 font-medium">
-              CRON: <code className="bg-muted px-1 rounded">{integration.cronExpression}</code>
+              CRON:{" "}
+              <code className="bg-muted px-1 rounded">
+                {integration.cronExpression}
+              </code>
             </span>
-            <span className={`font-semibold ${integration.isActive ? "text-green-600" : "text-red-600"}`}>
+            <span
+              className={`font-semibold ${integration.isActive ? "text-green-600" : "text-red-600"}`}
+            >
               {integration.isActive ? "Active" : "Inactive"}
             </span>
           </div>
@@ -161,7 +178,10 @@ export function IntegrationDetailsPage() {
               <Pencil className="mr-2 h-4 w-4" /> Edit
             </Link>
           </Button>
-          <Button onClick={() => runMutation.mutate()} disabled={runMutation.isPending}>
+          <Button
+            onClick={() => runMutation.mutate()}
+            disabled={runMutation.isPending}
+          >
             <Play className="mr-2 h-4 w-4" /> Run Now
           </Button>
         </div>
@@ -191,27 +211,43 @@ export function IntegrationDetailsPage() {
                 <TableBody>
                   {integration.steps?.map((step: any) => (
                     <TableRow key={step.id}>
-                      <TableCell className="font-bold">{step.executionOrder}</TableCell>
+                      <TableCell className="font-bold">
+                        {step.executionOrder}
+                      </TableCell>
                       <TableCell>
-                        <div className="text-xs text-muted-foreground mb-1">Conn ID: {step.sourceConnectionId}</div>
-                        <code className="text-[10px] block max-w-[150px] truncate" title={step.sourceQuery}>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          Conn ID: {step.sourceConnectionId}
+                        </div>
+                        <code
+                          className="text-[10px] block max-w-[150px] truncate"
+                          title={step.sourceQuery}
+                        >
                           {step.sourceQuery}
                         </code>
                       </TableCell>
                       <TableCell>
-                        <div className="text-xs text-muted-foreground mb-1">Conn ID: {step.targetConnectionId}</div>
-                        <code className="text-[10px] block max-w-[150px] truncate" title={step.targetQuery}>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          Conn ID: {step.targetConnectionId}
+                        </div>
+                        <code
+                          className="text-[10px] block max-w-[150px] truncate"
+                          title={step.targetQuery}
+                        >
                           {step.targetQuery}
                         </code>
                       </TableCell>
                       <TableCell>{step.batchSize}</TableCell>
                       <TableCell className="text-right space-x-1">
-                        <Button size="sm" variant="ghost" onClick={() => handleEditStep(step)}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditStep(step)}
+                        >
                           <Pencil className="h-3 w-3" />
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
+                        <Button
+                          size="sm"
+                          variant="ghost"
                           className="text-red-600 hover:text-red-700"
                           onClick={() => handleDeleteStep(step.id)}
                         >
@@ -222,7 +258,10 @@ export function IntegrationDetailsPage() {
                   ))}
                   {integration.steps?.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
+                      <TableCell
+                        colSpan={5}
+                        className="text-center py-10 text-muted-foreground"
+                      >
                         No steps defined for this integration.
                       </TableCell>
                     </TableRow>
@@ -241,45 +280,59 @@ export function IntegrationDetailsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Message</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {integration.logs?.map((log: any) => (
-                    <TableRow key={log.id}>
-                      <TableCell className="text-xs">
-                        {new Date(log.startTime).toLocaleString()}
-                      </TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          log.status === "SUCCESS" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                        }`}>
-                          {log.status}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {log.endTime ? `${((new Date(log.endTime).getTime() - new Date(log.startTime).getTime()) / 1000).toFixed(2)}s` : "-"}
-                      </TableCell>
-                      <TableCell className="text-xs max-w-[200px] truncate" title={log.message}>
-                        {log.message}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {integration.logs?.length === 0 && (
+              <div className="max-h-[300px] overflow-y-auto">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-background z-10">
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
-                        No logs available.
-                      </TableCell>
+                      <TableHead>Time</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Duration</TableHead>
+                      <TableHead>Message</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {integration.logs?.map((log: any) => (
+                      <TableRow key={log.id}>
+                        <TableCell className="text-xs">
+                          {new Date(log.startTime).toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              log.status === "SUCCESS"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {log.status}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {log.endTime
+                            ? `${((new Date(log.endTime).getTime() - new Date(log.startTime).getTime()) / 1000).toFixed(2)}s`
+                            : "-"}
+                        </TableCell>
+                        <TableCell
+                          className="text-xs max-w-[200px] truncate"
+                          title={log.message}
+                        >
+                          {log.message}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {integration.logs?.length === 0 && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={4}
+                          className="text-center py-6 text-muted-foreground"
+                        >
+                          No logs available.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -290,7 +343,11 @@ export function IntegrationDetailsPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between gap-2 text-lg">
                 <div className="flex items-center gap-2">
-                  {editingStepId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  {editingStepId ? (
+                    <Pencil className="h-4 w-4" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
                   {editingStepId ? "Update Step" : "Add Step"}
                 </div>
                 {editingStepId && (
@@ -302,14 +359,20 @@ export function IntegrationDetailsPage() {
             </CardHeader>
             <CardContent>
               <Form {...stepForm}>
-                <form onSubmit={stepForm.handleSubmit(onStepSubmit)} className="space-y-4">
+                <form
+                  onSubmit={stepForm.handleSubmit(onStepSubmit)}
+                  className="space-y-4"
+                >
                   <FormField
                     control={stepForm.control}
                     name="sourceConnectionId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Source Connection</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select source" />
@@ -317,7 +380,9 @@ export function IntegrationDetailsPage() {
                           </FormControl>
                           <SelectContent>
                             {connections?.map((c: any) => (
-                              <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                              <SelectItem key={c.id} value={c.id.toString()}>
+                                {c.name}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -333,10 +398,10 @@ export function IntegrationDetailsPage() {
                       <FormItem>
                         <FormLabel>Source Query (SELECT)</FormLabel>
                         <FormControl>
-                          <SqlTextarea 
-                            placeholder="SELECT * FROM table" 
-                            className="font-mono text-xs h-32" 
-                            {...field} 
+                          <SqlTextarea
+                            placeholder="SELECT * FROM table"
+                            className="font-mono text-xs"
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -350,7 +415,10 @@ export function IntegrationDetailsPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Target Connection</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select target" />
@@ -358,7 +426,9 @@ export function IntegrationDetailsPage() {
                           </FormControl>
                           <SelectContent>
                             {connections?.map((c: any) => (
-                              <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                              <SelectItem key={c.id} value={c.id.toString()}>
+                                {c.name}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -374,10 +444,10 @@ export function IntegrationDetailsPage() {
                       <FormItem>
                         <FormLabel>Target Query (INSERT/UPDATE)</FormLabel>
                         <FormControl>
-                          <SqlTextarea 
-                            placeholder="INSERT INTO table VALUES (:col)" 
-                            className="font-mono text-xs h-32" 
-                            {...field} 
+                          <SqlTextarea
+                            placeholder="INSERT INTO table VALUES (:col)"
+                            className="font-mono text-xs"
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -414,12 +484,27 @@ export function IntegrationDetailsPage() {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={stepMutation.isPending}>
-                    {stepMutation.isPending ? (editingStepId ? "Updating..." : "Adding...") : (editingStepId ? "Update Step" : "Add Step")}
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={stepMutation.isPending}
+                  >
+                    {stepMutation.isPending
+                      ? editingStepId
+                        ? "Updating..."
+                        : "Adding..."
+                      : editingStepId
+                        ? "Update Step"
+                        : "Add Step"}
                   </Button>
-                  
+
                   {editingStepId && (
-                    <Button type="button" variant="outline" className="w-full" onClick={handleCancelEdit}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleCancelEdit}
+                    >
                       Cancel
                     </Button>
                   )}

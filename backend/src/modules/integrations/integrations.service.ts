@@ -28,7 +28,14 @@ export class IntegrationsService {
   async findOne(id: number) {
     return this.prisma.integration.findUnique({
       where: { id },
-      include: { steps: true, logs: true },
+      include: {
+        steps: true,
+        logs: {
+          orderBy: {
+            startTime: 'desc',
+          },
+        },
+      },
     });
   }
 
