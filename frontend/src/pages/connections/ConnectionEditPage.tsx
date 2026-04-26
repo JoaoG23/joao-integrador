@@ -66,12 +66,35 @@ export function ConnectionEditPage() {
     },
   });
 
+  const testMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await api.post(`/connections/${id}/test`, data);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        alert("Connection successful!");
+      } else {
+        alert(`Connection failed: ${data.message}`);
+      }
+    },
+    onError: (error: any) => {
+      alert(`Error: ${error.response?.data?.message || error.message}`);
+    }
+  });
+
   function onSubmit(data: any) {
     data.port = Number(data.port);
     // Remove ID if present in data
     const { id: _, createdAt: __, ...updateData } = data;
     mutation.mutate(updateData);
   }
+
+  const handleTest = () => {
+    const values = form.getValues();
+    values.port = Number(values.port);
+    testMutation.mutate(values);
+  };
 
   if (isLoading) return <div>Loading connection...</div>;
 
@@ -216,6 +239,14 @@ export function ConnectionEditPage() {
               <div className="flex justify-end gap-4 pt-4">
                 <Button type="button" variant="outline" onClick={() => navigate("/connections")}>
                   Cancel
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="secondary" 
+                  onClick={handleTest} 
+                  disabled={testMutation.isPending}
+                >
+                  {testMutation.isPending ? "Testing..." : "Test Connection"}
                 </Button>
                 <Button type="submit" disabled={mutation.isPending}>
                   {mutation.isPending ? "Saving..." : "Save Changes"}

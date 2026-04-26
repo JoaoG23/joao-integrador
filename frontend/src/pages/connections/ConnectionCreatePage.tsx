@@ -49,11 +49,34 @@ export function ConnectionCreatePage() {
     },
   });
 
+  const testMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await api.post("/connections/test", data);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        alert("Connection successful!");
+      } else {
+        alert(`Connection failed: ${data.message}`);
+      }
+    },
+    onError: (error: any) => {
+      alert(`Error: ${error.response?.data?.message || error.message}`);
+    }
+  });
+
   function onSubmit(data: any) {
     // Convert port to number just in case
     data.port = Number(data.port);
     mutation.mutate(data);
   }
+
+  const handleTest = () => {
+    const values = form.getValues();
+    values.port = Number(values.port);
+    testMutation.mutate(values);
+  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -196,6 +219,14 @@ export function ConnectionCreatePage() {
               <div className="flex justify-end gap-4 pt-4">
                 <Button type="button" variant="outline" onClick={() => navigate("/connections")}>
                   Cancel
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="secondary" 
+                  onClick={handleTest} 
+                  disabled={testMutation.isPending}
+                >
+                  {testMutation.isPending ? "Testing..." : "Test Connection"}
                 </Button>
                 <Button type="submit" disabled={mutation.isPending}>
                   {mutation.isPending ? "Creating..." : "Create Connection"}

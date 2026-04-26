@@ -97,6 +97,24 @@ export function IntegrationDetailsPage() {
     },
   });
 
+  const runStepMutation = useMutation({
+    mutationFn: async (stepId: number) => {
+      const response = await api.post(
+        `/integrations/${id}/steps/${stepId}/run`,
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      alert(`Step execution finished! Processed rows: ${data.processedRows}`);
+      queryClient.invalidateQueries({ queryKey: ["integration", id] });
+    },
+    onError: (error: any) => {
+      alert(
+        `Step execution failed: ${error.response?.data?.message || error.message}`,
+      );
+    },
+  });
+
   const stepForm = useForm({
     defaultValues: {
       sourceConnectionId: "",
@@ -238,6 +256,16 @@ export function IntegrationDetailsPage() {
                       </TableCell>
                       <TableCell>{step.batchSize}</TableCell>
                       <TableCell className="text-right space-x-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-blue-600 hover:text-blue-700"
+                          onClick={() => runStepMutation.mutate(step.id)}
+                          disabled={runStepMutation.isPending}
+                          title="Run this step manually"
+                        >
+                          <Play className="h-3 w-3" />
+                        </Button>
                         <Button
                           size="sm"
                           variant="ghost"
