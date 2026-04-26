@@ -12,6 +12,9 @@ describe('OrchestratorService', () => {
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    integrationStep: {
+      findUnique: jest.fn(),
+    },
     integrationLog: {
       create: jest.fn(),
     },
@@ -114,6 +117,36 @@ describe('OrchestratorService', () => {
           }),
         }),
       );
+    });
+  });
+
+  describe('runStep', () => {
+    it('should run a single step successfully', async () => {
+      const stepId = 1;
+      const mockStep = {
+        id: stepId,
+        sourceConnection: {},
+        targetConnection: {},
+        sourceQuery: 'SELECT * FROM source',
+        targetQuery: 'INSERT INTO target',
+        batchSize: 10,
+      };
+
+      mockPrismaService.integrationStep.findUnique.mockResolvedValue(mockStep);
+      mockAdapter.executeSelect.mockResolvedValue([{ id: 1 }]);
+      mockAdapter.connect.mockResolvedValue(undefined);
+      mockAdapter.disconnect.mockResolvedValue(undefined);
+      mockAdapter.executeCommand.mockResolvedValue(undefined);
+      
+      const result = await service.runStep(stepId);
+
+      expect(result).toEqual({ processedRows: 1 });
+      expect(mockAdapter.executeSelect).toHaveBeenCalledWith(mockStep.sourceQuery);
+    });
+
+    it('should throw error if step not found', async () => {
+      mockPrismaService.integrationStep.findUnique.mockResolvedValue(null);
+      await expect(service.runStep(99)).rejects.toThrow('Step 99 not found');
     });
   });
 });

@@ -67,7 +67,23 @@ export class OrchestratorService {
     }
   }
 
-  private async executeStep(step: any): Promise<void> {
+  async runStep(stepId: number): Promise<{ processedRows: number }> {
+    const step = await this.prisma.integrationStep.findUnique({
+      where: { id: stepId },
+      include: {
+        sourceConnection: true,
+        targetConnection: true,
+      },
+    });
+
+    if (!step) {
+      throw new Error(`Step ${stepId} not found`);
+    }
+
+    return this.executeStep(step);
+  }
+
+  async executeStep(step: any): Promise<{ processedRows: number }> {
     const sourceAdapter = AdapterFactory.create(step.sourceConnection);
     const targetAdapter = AdapterFactory.create(step.targetConnection);
 
@@ -83,8 +99,10 @@ export class OrchestratorService {
         for (const row of batch) {
           await targetAdapter.executeCommand(step.targetQuery, row);
         }
-        this.logger.log(`Processed batch ${i / step.batchSize + 1}`);
+        this.logger.log(`Processed batch ${Math.floor(i / step.batchSize) + 1}`);
       }
+
+      return { processedRows: results.length };
     } finally {
       await sourceAdapter.disconnect().catch(err => this.logger.error(`Error disconnecting source: ${err.message}`));
       await targetAdapter.disconnect().catch(err => this.logger.error(`Error disconnecting target: ${err.message}`));

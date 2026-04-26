@@ -3,11 +3,15 @@ import { IntegrationStepsService } from './steps.service';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateStepDto } from './dto/create-step.dto';
 import { UpdateStepDto } from './dto/update-step.dto';
+import { OrchestratorService } from '../orchestrator/orchestrator.service';
 
 @ApiTags('integrations')
 @Controller('integrations/:integrationId/steps')
 export class IntegrationStepsController {
-  constructor(private service: IntegrationStepsService) {}
+  constructor(
+    private service: IntegrationStepsService,
+    private orchestrator: OrchestratorService,
+  ) {}
 
   /**
    * Add a new execution step to an existing integration.
@@ -59,5 +63,16 @@ export class IntegrationStepsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.service.remove(+id);
+  }
+
+  /**
+   * Manually execute a single integration step.
+   * Useful for testing queries and connectivity.
+   * @param id The step ID to run.
+   * @returns Success status and processed row count.
+   */
+  @Post(':id/run')
+  run(@Param('id') id: string) {
+    return this.orchestrator.runStep(+id);
   }
 }
