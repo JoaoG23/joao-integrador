@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import api from "../../api/api";
 import { Button } from "../../components/ui/button";
 import {
@@ -29,9 +30,17 @@ export function IntegrationsListPage() {
       return response.data;
     },
     onSuccess: () => {
-      alert("Integration execution started!");
+      toast.success("Execution started", {
+        icon: <Play className="h-4 w-4" />,
+        description: "The integration is now running in the background."
+      });
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
     },
+    onError: (error: any) => {
+      toast.error("Failed to start execution", {
+        description: error.response?.data?.message || error.message
+      });
+    }
   });
 
   const deleteMutation = useMutation({
@@ -39,8 +48,14 @@ export function IntegrationsListPage() {
       await api.delete(`/integrations/${id}`);
     },
     onSuccess: () => {
+      toast.success("Integration deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
     },
+    onError: (error: any) => {
+      toast.error("Failed to delete integration", {
+        description: error.response?.data?.message || error.message
+      });
+    }
   });
 
   const handleDelete = (id: number) => {

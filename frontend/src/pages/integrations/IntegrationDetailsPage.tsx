@@ -2,10 +2,12 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
+import { toast } from "sonner";
 import api from "../../api/api";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { SqlTextarea } from "./SqlTextarea";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -64,9 +66,17 @@ export function IntegrationDetailsPage() {
       return response.data;
     },
     onSuccess: () => {
-      alert("Execution started");
+      toast.success("Execution started", {
+        icon: <Play className="h-4 w-4" />,
+        description: "The integration is now running in the background."
+      });
       queryClient.invalidateQueries({ queryKey: ["integration", id] });
     },
+    onError: (error: any) => {
+      toast.error("Execution failed", {
+        description: error.response?.data?.message || error.message
+      });
+    }
   });
 
   const stepMutation = useMutation({
@@ -83,9 +93,15 @@ export function IntegrationDetailsPage() {
       }
     },
     onSuccess: () => {
+      toast.success(editingStepId ? "Step updated" : "Step added");
       queryClient.invalidateQueries({ queryKey: ["integration", id] });
       handleCancelEdit();
     },
+    onError: (error: any) => {
+      toast.error("Failed to save step", {
+        description: error.response?.data?.message || error.message
+      });
+    }
   });
 
   const deleteStepMutation = useMutation({
@@ -93,8 +109,14 @@ export function IntegrationDetailsPage() {
       await api.delete(`/integrations/${id}/steps/${stepId}`);
     },
     onSuccess: () => {
+      toast.success("Step deleted");
       queryClient.invalidateQueries({ queryKey: ["integration", id] });
     },
+    onError: (error: any) => {
+      toast.error("Failed to delete step", {
+        description: error.response?.data?.message || error.message
+      });
+    }
   });
 
   const runStepMutation = useMutation({
@@ -105,13 +127,17 @@ export function IntegrationDetailsPage() {
       return response.data;
     },
     onSuccess: (data) => {
-      alert(`Step execution finished! Processed rows: ${data.processedRows}`);
+      toast.success("Step execution finished!", {
+        icon: <CheckCircle2 className="h-4 w-4" />,
+        description: `Processed rows: ${data.processedRows}`
+      });
       queryClient.invalidateQueries({ queryKey: ["integration", id] });
     },
     onError: (error: any) => {
-      alert(
-        `Step execution failed: ${error.response?.data?.message || error.message}`,
-      );
+      toast.error("Step execution failed", {
+        icon: <AlertCircle className="h-4 w-4" />,
+        description: error.response?.data?.message || error.message
+      });
     },
   });
 

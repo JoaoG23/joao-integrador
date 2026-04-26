@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
 import { MainLayout } from "./components/layout/MainLayout";
 import { ConnectionsListPage } from "./pages/connections/ConnectionsListPage";
 import { ConnectionCreatePage } from "./pages/connections/ConnectionCreatePage";
@@ -14,6 +15,7 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <Toaster richColors position="top-right" />
       <BrowserRouter>
         <Routes>
           <Route element={<MainLayout />}>

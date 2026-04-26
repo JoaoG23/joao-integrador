@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import api from "../../api/api";
 import { Button } from "../../components/ui/button";
 import {
@@ -28,8 +29,14 @@ export function ConnectionsListPage() {
       await api.delete(`/connections/${id}`);
     },
     onSuccess: () => {
+      toast.success("Connection deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["connections"] });
     },
+    onError: (error: any) => {
+      toast.error("Failed to delete connection", {
+        description: error.response?.data?.message || error.message
+      });
+    }
   });
 
   const handleDelete = (id: number) => {

@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import api from "../../api/api";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -35,9 +36,15 @@ export function IntegrationCreatePage() {
       return response.data;
     },
     onSuccess: (data) => {
+      toast.success("Integration created successfully");
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
       navigate(`/integrations/${data.id}`);
     },
+    onError: (error: any) => {
+      toast.error("Failed to create integration", {
+        description: error.response?.data?.message || error.message
+      });
+    }
   });
 
   function onSubmit(data: any) {

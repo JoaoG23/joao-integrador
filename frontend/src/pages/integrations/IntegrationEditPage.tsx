@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import api from "../../api/api";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -56,10 +57,16 @@ export function IntegrationEditPage() {
       return response.data;
     },
     onSuccess: () => {
+      toast.success("Integration updated successfully");
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
       queryClient.invalidateQueries({ queryKey: ["integration", id] });
       navigate(`/integrations/${id}`);
     },
+    onError: (error: any) => {
+      toast.error("Failed to update integration", {
+        description: error.response?.data?.message || error.message
+      });
+    }
   });
 
   function onSubmit(data: any) {

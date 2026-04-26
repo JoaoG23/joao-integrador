@@ -1,9 +1,11 @@
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import api from "../../api/api";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
+import { Database, Plus, CheckCircle2, AlertCircle } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -44,9 +46,13 @@ export function ConnectionCreatePage() {
       return response.data;
     },
     onSuccess: () => {
+      toast.success("Connection created successfully");
       queryClient.invalidateQueries({ queryKey: ["connections"] });
       navigate("/connections");
     },
+    onError: (error: any) => {
+      toast.error(`Failed to create: ${error.response?.data?.message || error.message}`);
+    }
   });
 
   const testMutation = useMutation({
@@ -56,13 +62,21 @@ export function ConnectionCreatePage() {
     },
     onSuccess: (data) => {
       if (data.success) {
-        alert("Connection successful!");
+        toast.success("Connection successful!", {
+          icon: <CheckCircle2 className="h-4 w-4" />,
+          description: "Database communication established correctly."
+        });
       } else {
-        alert(`Connection failed: ${data.message}`);
+        toast.error("Connection failed", {
+          icon: <AlertCircle className="h-4 w-4" />,
+          description: data.message
+        });
       }
     },
     onError: (error: any) => {
-      alert(`Error: ${error.response?.data?.message || error.message}`);
+      toast.error("Test failed", {
+        description: error.response?.data?.message || error.message
+      });
     }
   });
 
@@ -225,11 +239,24 @@ export function ConnectionCreatePage() {
                   variant="secondary" 
                   onClick={handleTest} 
                   disabled={testMutation.isPending}
+                  className="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                 >
-                  {testMutation.isPending ? "Testing..." : "Test Connection"}
+                  {testMutation.isPending ? (
+                    "Testing..."
+                  ) : (
+                    <>
+                      <Database className="mr-2 h-4 w-4" /> Test Connection
+                    </>
+                  )}
                 </Button>
-                <Button type="submit" disabled={mutation.isPending}>
-                  {mutation.isPending ? "Creating..." : "Create Connection"}
+                <Button type="submit" disabled={mutation.isPending} className="bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600">
+                  {mutation.isPending ? (
+                    "Creating..."
+                  ) : (
+                    <>
+                      <Plus className="mr-2 h-4 w-4" /> Create Connection
+                    </>
+                  )}
                 </Button>
               </div>
             </form>
