@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, NotFoundException } from '@nestjs/common';
 import { DatabaseConnectionsService } from './connections.service';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateConnectionDto } from './dto/create-connection.dto';
@@ -57,5 +57,30 @@ export class DatabaseConnectionsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.service.remove(+id);
+  }
+
+  /**
+   * Test a database connection with unsaved configuration.
+   * Useful for validating credentials before saving.
+   * @param data Connection configuration to test.
+   * @returns Success status and connection message.
+   */
+  @Post('test')
+  test(@Body() data: any) {
+    return this.service.testConnection(data);
+  }
+
+  /**
+   * Test an existing database connection by its ID.
+   * @param id The database connection ID.
+   * @returns Success status and connection message.
+   */
+  @Post(':id/test')
+  async testById(@Param('id') id: string) {
+    const connection = await this.service.findOne(+id);
+    if (!connection) {
+      throw new NotFoundException('Connection not found');
+    }
+    return this.service.testConnection(connection);
   }
 }

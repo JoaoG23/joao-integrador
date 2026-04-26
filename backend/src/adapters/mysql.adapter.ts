@@ -26,7 +26,7 @@ export class MysqlAdapter implements IDatabaseAdapter {
   }
 
   async connect(): Promise<void> {
-    // No pooling o connect é implícito
+    await this.currentPool.execute('SELECT 1');
   }
 
   async executeSelect(query: string): Promise<any[]> {

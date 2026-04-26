@@ -25,7 +25,7 @@ export class PostgresAdapter implements IDatabaseAdapter {
   }
 
   async connect(): Promise<void> {
-    // No pooling o connect é implícito na primeira query
+    await this.currentPool.query('SELECT 1');
   }
 
   async executeSelect(query: string): Promise<any[]> {

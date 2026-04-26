@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DatabaseConnectionsService } from './connections.service';
 import { PrismaService } from '../../database/prisma.service';
+import { AdapterFactory } from '../../adapters/adapter.factory';
 
 describe('DatabaseConnectionsService', () => {
   let service: DatabaseConnectionsService;
@@ -14,6 +15,11 @@ describe('DatabaseConnectionsService', () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
+  };
+
+  const mockAdapter = {
+    connect: jest.fn(),
+    disconnect: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -98,6 +104,35 @@ describe('DatabaseConnectionsService', () => {
 
       expect(mockPrismaService.databaseConnection.delete).toHaveBeenCalledWith({ where: { id } });
       expect(result.id).toBe(id);
+    });
+  });
+
+  describe('testConnection', () => {
+    it('should return success when connection is successful', async () => {
+      const config = { driver: 'postgres', host: 'localhost' };
+      jest.spyOn(AdapterFactory, 'create').mockReturnValue(mockAdapter as any);
+      mockAdapter.connect.mockResolvedValue(undefined);
+
+      const result = await service.testConnection(config);
+
+      expect(result).toEqual({ success: true, message: 'Connection successful' });
+      expect(mockAdapter.connect).toHaveBeenCalled();
+    });
+
+    it('should return failure when connection fails', async () => {
+      const config = { driver: 'postgres', host: 'localhost' };
+      jest.spyOn(AdapterFactory, 'create').mockReturnValue(mockAdapter as any);
+      mockAdapter.connect.mockRejectedValue(new Error('Connection failed'));
+
+      const result = await service.testConnection(config);
+
+      expect(result).toEqual({ success: false, message: 'Connection failed: Connection failed' });
+    });
+
+    it('should return failure when driver is missing', async () => {
+      const result = await service.testConnection({});
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('Driver is required');
     });
   });
 });
