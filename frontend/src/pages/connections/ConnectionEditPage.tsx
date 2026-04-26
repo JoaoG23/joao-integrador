@@ -110,6 +110,8 @@ export function ConnectionEditPage() {
     testMutation.mutate(values);
   };
 
+  const driver = form.watch("driver");
+
   if (isLoading) return <div>Loading connection...</div>;
 
   return (
@@ -144,7 +146,11 @@ export function ConnectionEditPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Driver</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        value={field.value}
+                        key={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a driver" />
@@ -236,19 +242,21 @@ export function ConnectionEditPage() {
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="schema"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Schema (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="public" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {driver !== "mysql" && (
+                <FormField
+                  control={form.control}
+                  name="schema"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Schema (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="public" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <div className="flex justify-end gap-4 pt-4">
                 <Button type="button" variant="outline" onClick={() => navigate("/connections")}>

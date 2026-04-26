@@ -92,6 +92,8 @@ export function ConnectionCreatePage() {
     testMutation.mutate(values);
   };
 
+  const driver = form.watch("driver");
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Add Connection</h1>
@@ -216,19 +218,21 @@ export function ConnectionCreatePage() {
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="schema"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Schema (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="public" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {driver !== "mysql" && (
+                <FormField
+                  control={form.control}
+                  name="schema"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Schema (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="public" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <div className="flex justify-end gap-4 pt-4">
                 <Button type="button" variant="outline" onClick={() => navigate("/connections")}>
