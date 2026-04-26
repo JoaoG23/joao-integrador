@@ -39,6 +39,7 @@ export class DatabaseConnectionsService {
     try {
       const adapter = AdapterFactory.create(config);
       await adapter.connect();
+      await adapter.disconnect();
       return { success: true, message: 'Connection successful' };
     } catch (error) {
       return { success: false, message: `Connection failed: ${error.message}` };

@@ -117,6 +117,7 @@ describe('DatabaseConnectionsService', () => {
 
       expect(result).toEqual({ success: true, message: 'Connection successful' });
       expect(mockAdapter.connect).toHaveBeenCalled();
+      expect(mockAdapter.disconnect).toHaveBeenCalled();
     });
 
     it('should return failure when connection fails', async () => {

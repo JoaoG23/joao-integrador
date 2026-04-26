@@ -37,7 +37,7 @@ export class MssqlAdapter implements IDatabaseAdapter {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       this.connection = new Connection(this.config);
       this.connection.on('connect', (err) => {
         if (err) {
@@ -59,6 +59,9 @@ export class MssqlAdapter implements IDatabaseAdapter {
 
       this.connection.connect();
     });
+
+    // Verificação extra de conectividade
+    await this.executeSelect('SELECT 1');
   }
 
   async executeSelect(query: string): Promise<any[]> {
@@ -102,7 +105,11 @@ export class MssqlAdapter implements IDatabaseAdapter {
   }
 
   async disconnect(): Promise<void> {
-    // No-op: mantemos a conexão aberta para o próximo step
+    const key = this.generateKey(this.config);
+    if (this.connection) {
+      this.connection.close();
+      MssqlAdapter.connections.delete(key);
+    }
   }
 
   private generateKey(config: any): string {
