@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import api from "../../api/api";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
-import { SqlTextarea } from "./SqlTextarea";
+import { SqlTextarea } from "./sql-textarea";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import {
   Table,
