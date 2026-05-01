@@ -86,7 +86,10 @@ export function ConnectionCreatePage() {
     mutation.mutate(data);
   }
 
-  const handleTest = () => {
+  const handleTest = async () => {
+    const isValid = await form.trigger();
+    if (!isValid) return;
+
     const values = form.getValues();
     values.port = Number(values.port);
     testMutation.mutate(values);
@@ -108,6 +111,7 @@ export function ConnectionCreatePage() {
               <FormField
                 control={form.control}
                 name="name"
+                rules={{ required: "Nome da conexão é obrigatório" }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Connection Name</FormLabel>
@@ -123,6 +127,7 @@ export function ConnectionCreatePage() {
                 <FormField
                   control={form.control}
                   name="driver"
+                  rules={{ required: "Driver é obrigatório" }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Driver</FormLabel>
@@ -146,6 +151,7 @@ export function ConnectionCreatePage() {
                 <FormField
                   control={form.control}
                   name="host"
+                  rules={{ required: "Host é obrigatório" }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Host</FormLabel>
@@ -162,6 +168,7 @@ export function ConnectionCreatePage() {
                 <FormField
                   control={form.control}
                   name="port"
+                  rules={{ required: "Porta é obrigatória" }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Port</FormLabel>
@@ -176,6 +183,7 @@ export function ConnectionCreatePage() {
                 <FormField
                   control={form.control}
                   name="databaseName"
+                  rules={{ required: "Nome do banco de dados é obrigatório" }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Database Name</FormLabel>
@@ -192,6 +200,7 @@ export function ConnectionCreatePage() {
                 <FormField
                   control={form.control}
                   name="username"
+                  rules={{ required: "Usuário é obrigatório" }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Username</FormLabel>
@@ -206,6 +215,7 @@ export function ConnectionCreatePage() {
                 <FormField
                   control={form.control}
                   name="password"
+                  rules={{ required: "Senha é obrigatória" }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Password</FormLabel>
@@ -222,9 +232,10 @@ export function ConnectionCreatePage() {
                 <FormField
                   control={form.control}
                   name="schema"
+                  rules={{ required: "Schema é obrigatório" }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Schema (Optional)</FormLabel>
+                      <FormLabel>Schema</FormLabel>
                       <FormControl>
                         <Input placeholder="public" {...field} />
                       </FormControl>
