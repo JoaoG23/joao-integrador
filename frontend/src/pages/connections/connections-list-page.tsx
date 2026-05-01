@@ -13,9 +13,23 @@ import {
 } from "../../components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Plus, Database, Pencil, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../../components/ui/alert-dialog";
+import { useState } from "react";
 
 export function ConnectionsListPage() {
   const queryClient = useQueryClient();
+  const [connectionToDelete, setConnectionToDelete] = useState<number | null>(null);
+
   const { data: connections, isLoading } = useQuery({
     queryKey: ["connections"],
     queryFn: async () => {
@@ -29,29 +43,29 @@ export function ConnectionsListPage() {
       await api.delete(`/connections/${id}`);
     },
     onSuccess: () => {
-      toast.success("Connection deleted successfully");
+      toast.success("Conexão excluída com sucesso");
       queryClient.invalidateQueries({ queryKey: ["connections"] });
+      setConnectionToDelete(null);
     },
     onError: (error: any) => {
-      toast.error("Failed to delete connection", {
+      toast.error("Falha ao excluir conexão", {
         description: error.response?.data?.message || error.message
       });
     }
   });
 
-  const handleDelete = (id: number) => {
-    if (window.confirm("Are you sure you want to delete this connection?")) {
-      deleteMutation.mutate(id);
-    }
+  const handleDelete = () => {
+    if (!connectionToDelete) return;
+    deleteMutation.mutate(connectionToDelete);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Database Connections</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Conexões de Banco de Dados</h1>
         <Button asChild>
           <Link to="/connections/new">
-            <Plus className="mr-2 h-4 w-4" /> Add Connection
+            <Plus className="mr-2 h-4 w-4" /> Adicionar Conexão
           </Link>
         </Button>
       </div>
@@ -60,22 +74,22 @@ export function ConnectionsListPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Database className="h-5 w-5 text-muted-foreground" />
-            Registered Connections
+            Conexões Registradas
           </CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-10">Loading connections...</div>
+            <div className="text-center py-10">Carregando conexões...</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
+                  <TableHead>Nome</TableHead>
                   <TableHead>Driver</TableHead>
                   <TableHead>Host</TableHead>
-                  <TableHead>Database</TableHead>
+                  <TableHead>Banco de Dados</TableHead>
                   <TableHead>Schema</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -92,22 +106,46 @@ export function ConnectionsListPage() {
                           <Pencil className="h-4 w-4" />
                         </Link>
                       </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => handleDelete(conn.id)}
-                        disabled={deleteMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => setConnectionToDelete(conn.id)}
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir Conexão</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir esta conexão? Esta ação não pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel onClick={() => setConnectionToDelete(null)}>
+                              Cancelar
+                            </AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={handleDelete}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
                 {connections?.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                      No connections found. Add your first connection to get started.
+                      Nenhuma conexão encontrada. Adicione sua primeira conexão para começar.
                     </TableCell>
                   </TableRow>
                 )}
