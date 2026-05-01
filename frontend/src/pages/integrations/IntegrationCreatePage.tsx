@@ -36,12 +36,12 @@ export function IntegrationCreatePage() {
       return response.data;
     },
     onSuccess: (data) => {
-      toast.success("Integration created successfully");
+      toast.success("Integração criada com sucesso");
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
       navigate(`/integrations/${data.id}`);
     },
     onError: (error: any) => {
-      toast.error("Failed to create integration", {
+      toast.error("Falha ao criar integração", {
         description: error.response?.data?.message || error.message
       });
     }
@@ -53,11 +53,11 @@ export function IntegrationCreatePage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight">Create Integration</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Criar Integração</h1>
       
       <Card>
         <CardHeader>
-          <CardTitle>Integration Details</CardTitle>
+          <CardTitle>Detalhes da Integração</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -65,11 +65,12 @@ export function IntegrationCreatePage() {
               <FormField
                 control={form.control}
                 name="name"
+                rules={{ required: "Nome da integração é obrigatório" }}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Integration Name</FormLabel>
+                    <FormLabel>Nome da Integração</FormLabel>
                     <FormControl>
-                      <Input placeholder="Sales to DW" {...field} />
+                      <Input placeholder="Vendas para DW" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -79,11 +80,12 @@ export function IntegrationCreatePage() {
               <FormField
                 control={form.control}
                 name="description"
+                rules={{ required: "Descrição é obrigatória" }}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>Descrição</FormLabel>
                     <FormControl>
-                      <Input placeholder="Description of what this integration does" {...field} />
+                      <Input placeholder="Descrição do que esta integração faz" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -93,14 +95,15 @@ export function IntegrationCreatePage() {
               <FormField
                 control={form.control}
                 name="cronExpression"
+                rules={{ required: "Expressão Cron é obrigatória" }}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cron Expression</FormLabel>
+                    <FormLabel>Expressão Cron</FormLabel>
                     <FormControl>
                       <Input placeholder="0 0 * * *" {...field} />
                     </FormControl>
                     <FormDescription>
-                      Standard CRON format (e.g., "0 0 * * *" for daily at midnight).
+                      Formato CRON padrão (ex: "0 0 * * *" para diariamente à meia-noite).
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -119,9 +122,9 @@ export function IntegrationCreatePage() {
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>Active</FormLabel>
+                      <FormLabel>Ativo</FormLabel>
                       <FormDescription>
-                        Schedule this integration to run automatically.
+                        Agendar esta integração para rodar automaticamente.
                       </FormDescription>
                     </div>
                   </FormItem>
@@ -130,10 +133,10 @@ export function IntegrationCreatePage() {
 
               <div className="flex justify-end gap-4 pt-4">
                 <Button type="button" variant="outline" onClick={() => navigate("/integrations")}>
-                  Cancel
+                  Cancelar
                 </Button>
                 <Button type="submit" disabled={mutation.isPending}>
-                  {mutation.isPending ? "Creating..." : "Create Integration"}
+                  {mutation.isPending ? "Criando..." : "Criar Integração"}
                 </Button>
               </div>
             </form>

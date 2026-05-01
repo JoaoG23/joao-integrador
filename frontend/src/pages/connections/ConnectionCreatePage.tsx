@@ -46,12 +46,12 @@ export function ConnectionCreatePage() {
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Connection created successfully");
+      toast.success("Conexão criada com sucesso");
       queryClient.invalidateQueries({ queryKey: ["connections"] });
       navigate("/connections");
     },
     onError: (error: any) => {
-      toast.error(`Failed to create: ${error.response?.data?.message || error.message}`);
+      toast.error(`Erro ao criar: ${error.response?.data?.message || error.message}`);
     }
   });
 
@@ -62,19 +62,19 @@ export function ConnectionCreatePage() {
     },
     onSuccess: (data) => {
       if (data.success) {
-        toast.success("Connection successful!", {
+        toast.success("Conexão bem-sucedida!", {
           icon: <CheckCircle2 className="h-4 w-4" />,
-          description: "Database communication established correctly."
+          description: "Comunicação com o banco de dados estabelecida corretamente."
         });
       } else {
-        toast.error("Connection failed", {
+        toast.error("Falha na conexão", {
           icon: <AlertCircle className="h-4 w-4" />,
           description: data.message
         });
       }
     },
     onError: (error: any) => {
-      toast.error("Test failed", {
+      toast.error("Falha no teste", {
         description: error.response?.data?.message || error.message
       });
     }
@@ -99,11 +99,11 @@ export function ConnectionCreatePage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight">Add Connection</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Adicionar Conexão</h1>
       
       <Card>
         <CardHeader>
-          <CardTitle>Connection Details</CardTitle>
+          <CardTitle>Detalhes da Conexão</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -114,9 +114,9 @@ export function ConnectionCreatePage() {
                 rules={{ required: "Nome da conexão é obrigatório" }}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Connection Name</FormLabel>
+                    <FormLabel>Nome da Conexão</FormLabel>
                     <FormControl>
-                      <Input placeholder="My Database" {...field} />
+                      <Input placeholder="Meu Banco de Dados" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -134,7 +134,7 @@ export function ConnectionCreatePage() {
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a driver" />
+                            <SelectValue placeholder="Selecione um driver" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -171,7 +171,7 @@ export function ConnectionCreatePage() {
                   rules={{ required: "Porta é obrigatória" }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Port</FormLabel>
+                      <FormLabel>Porta</FormLabel>
                       <FormControl>
                         <Input type="number" {...field} />
                       </FormControl>
@@ -186,9 +186,9 @@ export function ConnectionCreatePage() {
                   rules={{ required: "Nome do banco de dados é obrigatório" }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Database Name</FormLabel>
+                      <FormLabel>Nome do Banco de Dados</FormLabel>
                       <FormControl>
-                        <Input placeholder="my_db" {...field} />
+                        <Input placeholder="meu_db" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -203,7 +203,7 @@ export function ConnectionCreatePage() {
                   rules={{ required: "Usuário é obrigatório" }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>Usuário</FormLabel>
                       <FormControl>
                         <Input placeholder="admin" {...field} />
                       </FormControl>
@@ -218,7 +218,7 @@ export function ConnectionCreatePage() {
                   rules={{ required: "Senha é obrigatória" }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>Senha</FormLabel>
                       <FormControl>
                         <Input type="password" {...field} />
                       </FormControl>
@@ -247,7 +247,7 @@ export function ConnectionCreatePage() {
 
               <div className="flex justify-end gap-4 pt-4">
                 <Button type="button" variant="outline" onClick={() => navigate("/connections")}>
-                  Cancel
+                  Cancelar
                 </Button>
                 <Button 
                   type="button" 
@@ -257,19 +257,19 @@ export function ConnectionCreatePage() {
                   className="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                 >
                   {testMutation.isPending ? (
-                    "Testing..."
+                    "Testando..."
                   ) : (
                     <>
-                      <Database className="mr-2 h-4 w-4" /> Test Connection
+                      <Database className="mr-2 h-4 w-4" /> Testar Conexão
                     </>
                   )}
                 </Button>
                 <Button type="submit" disabled={mutation.isPending} className="bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600">
                   {mutation.isPending ? (
-                    "Creating..."
+                    "Criando..."
                   ) : (
                     <>
-                      <Plus className="mr-2 h-4 w-4" /> Create Connection
+                      <Plus className="mr-2 h-4 w-4" /> Criar Conexão
                     </>
                   )}
                 </Button>

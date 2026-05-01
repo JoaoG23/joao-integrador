@@ -66,14 +66,14 @@ export function IntegrationDetailsPage() {
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Execution started", {
+      toast.success("Execução iniciada", {
         icon: <Play className="h-4 w-4" />,
-        description: "The integration is now running in the background."
+        description: "A integração está rodando em segundo plano."
       });
       queryClient.invalidateQueries({ queryKey: ["integration", id] });
     },
     onError: (error: any) => {
-      toast.error("Execution failed", {
+      toast.error("Falha na execução", {
         description: error.response?.data?.message || error.message
       });
     }
@@ -93,12 +93,12 @@ export function IntegrationDetailsPage() {
       }
     },
     onSuccess: () => {
-      toast.success(editingStepId ? "Step updated" : "Step added");
+      toast.success(editingStepId ? "Passo atualizado" : "Passo adicionado");
       queryClient.invalidateQueries({ queryKey: ["integration", id] });
       handleCancelEdit();
     },
     onError: (error: any) => {
-      toast.error("Failed to save step", {
+      toast.error("Falha ao salvar passo", {
         description: error.response?.data?.message || error.message
       });
     }
@@ -109,11 +109,11 @@ export function IntegrationDetailsPage() {
       await api.delete(`/integrations/${id}/steps/${stepId}`);
     },
     onSuccess: () => {
-      toast.success("Step deleted");
+      toast.success("Passo excluído");
       queryClient.invalidateQueries({ queryKey: ["integration", id] });
     },
     onError: (error: any) => {
-      toast.error("Failed to delete step", {
+      toast.error("Falha ao excluir passo", {
         description: error.response?.data?.message || error.message
       });
     }
@@ -127,14 +127,14 @@ export function IntegrationDetailsPage() {
       return response.data;
     },
     onSuccess: (data) => {
-      toast.success("Step execution finished!", {
+      toast.success("Execução do passo finalizada!", {
         icon: <CheckCircle2 className="h-4 w-4" />,
-        description: `Processed rows: ${data.processedRows}`
+        description: `Linhas processadas: ${data.processedRows}`
       });
       queryClient.invalidateQueries({ queryKey: ["integration", id] });
     },
     onError: (error: any) => {
-      toast.error("Step execution failed", {
+      toast.error("Falha na execução do passo", {
         icon: <AlertCircle className="h-4 w-4" />,
         description: error.response?.data?.message || error.message
       });
@@ -185,12 +185,11 @@ export function IntegrationDetailsPage() {
   };
 
   const handleDeleteStep = (stepId: number) => {
-    if (window.confirm("Are you sure you want to delete this step?")) {
-      deleteStepMutation.mutate(stepId);
-    }
+    if (!window.confirm("Tem certeza que deseja excluir este passo?")) return;
+    deleteStepMutation.mutate(stepId);
   };
 
-  if (isIntegrationLoading) return <div>Loading integration details...</div>;
+  if (isIntegrationLoading) return <div>Carregando detalhes da integração...</div>;
 
   return (
     <div className="space-y-8">
@@ -212,21 +211,21 @@ export function IntegrationDetailsPage() {
             <span
               className={`font-semibold ${integration.isActive ? "text-green-600" : "text-red-600"}`}
             >
-              {integration.isActive ? "Active" : "Inactive"}
+              {integration.isActive ? "Ativa" : "Inativa"}
             </span>
           </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
             <Link to={`/integrations/${id}/edit`}>
-              <Pencil className="mr-2 h-4 w-4" /> Edit
+              <Pencil className="mr-2 h-4 w-4" /> Editar
             </Link>
           </Button>
           <Button
             onClick={() => runMutation.mutate()}
             disabled={runMutation.isPending}
           >
-            <Play className="mr-2 h-4 w-4" /> Run Now
+            <Play className="mr-2 h-4 w-4" /> Rodar Agora
           </Button>
         </div>
       </div>
@@ -238,18 +237,18 @@ export function IntegrationDetailsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ListTree className="h-5 w-5" />
-                Execution Steps
+                Passos de Execução
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[80px]">Order</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead>Target</TableHead>
-                    <TableHead>Batch</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="w-[80px]">Ordem</TableHead>
+                    <TableHead>Origem</TableHead>
+                    <TableHead>Destino</TableHead>
+                    <TableHead>Lote</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -288,7 +287,7 @@ export function IntegrationDetailsPage() {
                           className="text-blue-600 hover:text-blue-700"
                           onClick={() => runStepMutation.mutate(step.id)}
                           disabled={runStepMutation.isPending}
-                          title="Run this step manually"
+                          title="Rodar este passo manualmente"
                         >
                           <Play className="h-3 w-3" />
                         </Button>
@@ -316,7 +315,7 @@ export function IntegrationDetailsPage() {
                         colSpan={5}
                         className="text-center py-10 text-muted-foreground"
                       >
-                        No steps defined for this integration.
+                        Nenhum passo definido para esta integração.
                       </TableCell>
                     </TableRow>
                   )}
@@ -330,7 +329,7 @@ export function IntegrationDetailsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <History className="h-5 w-5" />
-                Execution Logs
+                Logs de Execução
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -338,10 +337,10 @@ export function IntegrationDetailsPage() {
                 <Table>
                   <TableHeader className="sticky top-0 bg-background z-10">
                     <TableRow>
-                      <TableHead>Time</TableHead>
+                      <TableHead>Horário</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Duration</TableHead>
-                      <TableHead>Message</TableHead>
+                      <TableHead>Duração</TableHead>
+                      <TableHead>Mensagem</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -380,7 +379,7 @@ export function IntegrationDetailsPage() {
                           colSpan={4}
                           className="text-center py-6 text-muted-foreground"
                         >
-                          No logs available.
+                          Nenhum log disponível.
                         </TableCell>
                       </TableRow>
                     )}
@@ -402,7 +401,7 @@ export function IntegrationDetailsPage() {
                   ) : (
                     <Plus className="h-4 w-4" />
                   )}
-                  {editingStepId ? "Update Step" : "Add Step"}
+                  {editingStepId ? "Atualizar Passo" : "Adicionar Passo"}
                 </div>
                 {editingStepId && (
                   <Button variant="ghost" size="sm" onClick={handleCancelEdit}>
@@ -420,16 +419,17 @@ export function IntegrationDetailsPage() {
                   <FormField
                     control={stepForm.control}
                     name="sourceConnectionId"
+                    rules={{ required: "Conexão de origem é obrigatória" }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Source Connection</FormLabel>
+                        <FormLabel>Conexão de Origem</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select source" />
+                              <SelectValue placeholder="Selecione a origem" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -448,12 +448,13 @@ export function IntegrationDetailsPage() {
                   <FormField
                     control={stepForm.control}
                     name="sourceQuery"
+                    rules={{ required: "Query de origem é obrigatória" }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Source Query (SELECT)</FormLabel>
+                        <FormLabel>Query de Origem (SELECT)</FormLabel>
                         <FormControl>
                           <SqlTextarea
-                            placeholder="SELECT * FROM table"
+                            placeholder="SELECT * FROM tabela"
                             className="font-mono text-xs"
                             {...field}
                           />
@@ -466,16 +467,17 @@ export function IntegrationDetailsPage() {
                   <FormField
                     control={stepForm.control}
                     name="targetConnectionId"
+                    rules={{ required: "Conexão de destino é obrigatória" }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Target Connection</FormLabel>
+                        <FormLabel>Conexão de Destino</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select target" />
+                              <SelectValue placeholder="Selecione o destino" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -494,12 +496,13 @@ export function IntegrationDetailsPage() {
                   <FormField
                     control={stepForm.control}
                     name="targetQuery"
+                    rules={{ required: "Query de destino é obrigatória" }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Target Query (INSERT/UPDATE)</FormLabel>
+                        <FormLabel>Query de Destino (INSERT/UPDATE)</FormLabel>
                         <FormControl>
                           <SqlTextarea
-                            placeholder="INSERT INTO table VALUES (:col)"
+                            placeholder="INSERT INTO tabela VALUES (:col)"
                             className="font-mono text-xs"
                             {...field}
                           />
@@ -513,9 +516,10 @@ export function IntegrationDetailsPage() {
                     <FormField
                       control={stepForm.control}
                       name="executionOrder"
+                      rules={{ required: "Ordem é obrigatória" }}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Order</FormLabel>
+                          <FormLabel>Ordem</FormLabel>
                           <FormControl>
                             <Input type="number" {...field} />
                           </FormControl>
@@ -526,9 +530,10 @@ export function IntegrationDetailsPage() {
                     <FormField
                       control={stepForm.control}
                       name="batchSize"
+                      rules={{ required: "Tamanho do lote é obrigatório" }}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Batch Size</FormLabel>
+                          <FormLabel>Tamanho do Lote</FormLabel>
                           <FormControl>
                             <Input type="number" {...field} />
                           </FormControl>
@@ -545,11 +550,11 @@ export function IntegrationDetailsPage() {
                   >
                     {stepMutation.isPending
                       ? editingStepId
-                        ? "Updating..."
-                        : "Adding..."
+                        ? "Atualizando..."
+                        : "Adicionando..."
                       : editingStepId
-                        ? "Update Step"
-                        : "Add Step"}
+                        ? "Atualizar Passo"
+                        : "Adicionar Passo"}
                   </Button>
 
                   {editingStepId && (
@@ -559,7 +564,7 @@ export function IntegrationDetailsPage() {
                       className="w-full"
                       onClick={handleCancelEdit}
                     >
-                      Cancel
+                      Cancelar
                     </Button>
                   )}
                 </form>

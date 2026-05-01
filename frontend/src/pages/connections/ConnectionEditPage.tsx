@@ -13,7 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
 import {
   Form,
   FormControl,
@@ -28,7 +33,7 @@ export function ConnectionEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  
+
   const { data: connection, isLoading } = useQuery({
     queryKey: ["connection", id],
     queryFn: async () => {
@@ -62,14 +67,16 @@ export function ConnectionEditPage() {
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Connection updated successfully");
+      toast.success("Conexão atualizada com sucesso");
       queryClient.invalidateQueries({ queryKey: ["connections"] });
       queryClient.invalidateQueries({ queryKey: ["connection", id] });
       navigate("/connections");
     },
     onError: (error: any) => {
-      toast.error(`Failed to update: ${error.response?.data?.message || error.message}`);
-    }
+      toast.error(
+        `Erro ao atualizar: ${error.response?.data?.message || error.message}`,
+      );
+    },
   });
 
   const testMutation = useMutation({
@@ -79,22 +86,22 @@ export function ConnectionEditPage() {
     },
     onSuccess: (data) => {
       if (data.success) {
-        toast.success("Connection successful!", {
+        toast.success("Conexão bem-sucedida!", {
           icon: <CheckCircle2 className="h-4 w-4" />,
-          description: "Database communication established correctly."
+          description: "Comunicação com o banco de dados estabelecida corretamente.",
         });
       } else {
-        toast.error("Connection failed", {
+        toast.error("Falha na conexão", {
           icon: <AlertCircle className="h-4 w-4" />,
-          description: data.message
+          description: data.message,
         });
       }
     },
     onError: (error: any) => {
-      toast.error("Test failed", {
-        description: error.response?.data?.message || error.message
+      toast.error("Falha no teste", {
+        description: error.response?.data?.message || error.message,
       });
-    }
+    },
   });
 
   function onSubmit(data: any) {
@@ -115,15 +122,15 @@ export function ConnectionEditPage() {
 
   const driver = form.watch("driver");
 
-  if (isLoading) return <div>Loading connection...</div>;
+  if (isLoading) return <div>Carregando conexão...</div>;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight">Edit Connection</h1>
-      
+      <h1 className="text-3xl font-bold tracking-tight">Editar Conexão</h1>
+
       <Card>
         <CardHeader>
-          <CardTitle>Connection Details</CardTitle>
+          <CardTitle>Detalhes da Conexão</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -134,9 +141,9 @@ export function ConnectionEditPage() {
                 rules={{ required: "Nome da conexão é obrigatório" }}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Connection Name</FormLabel>
+                    <FormLabel>Nome da Conexão</FormLabel>
                     <FormControl>
-                      <Input placeholder="My Database" {...field} />
+                      <Input placeholder="Meu Banco de Dados" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -151,14 +158,14 @@ export function ConnectionEditPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Driver</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
+                      <Select
+                        onValueChange={field.onChange}
                         value={field.value}
                         key={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a driver" />
+                            <SelectValue placeholder="Selecione um driver" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -195,7 +202,7 @@ export function ConnectionEditPage() {
                   rules={{ required: "Porta é obrigatória" }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Port</FormLabel>
+                      <FormLabel>Porta</FormLabel>
                       <FormControl>
                         <Input type="number" {...field} />
                       </FormControl>
@@ -210,9 +217,9 @@ export function ConnectionEditPage() {
                   rules={{ required: "Nome do banco de dados é obrigatório" }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Database Name</FormLabel>
+                      <FormLabel>Nome do Banco de Dados</FormLabel>
                       <FormControl>
-                        <Input placeholder="my_db" {...field} />
+                        <Input placeholder="meu_db" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -227,7 +234,7 @@ export function ConnectionEditPage() {
                   rules={{ required: "Usuário é obrigatório" }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>Usuário</FormLabel>
                       <FormControl>
                         <Input placeholder="admin" {...field} />
                       </FormControl>
@@ -242,7 +249,7 @@ export function ConnectionEditPage() {
                   rules={{ required: "Senha é obrigatória" }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>Senha</FormLabel>
                       <FormControl>
                         <Input type="password" {...field} />
                       </FormControl>
@@ -270,30 +277,38 @@ export function ConnectionEditPage() {
               )}
 
               <div className="flex justify-end gap-4 pt-4">
-                <Button type="button" variant="outline" onClick={() => navigate("/connections")}>
-                  Cancel
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate("/connections")}
+                >
+                  Cancelar
                 </Button>
-                <Button 
-                  type="button" 
-                  variant="secondary" 
-                  onClick={handleTest} 
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleTest}
                   disabled={testMutation.isPending}
                   className="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                 >
                   {testMutation.isPending ? (
-                    "Testing..."
+                    "Testando..."
                   ) : (
                     <>
-                      <Database className="mr-2 h-4 w-4" /> Test Connection
+                      <Database className="mr-2 h-4 w-4" /> Testar Conexão
                     </>
                   )}
                 </Button>
-                <Button type="submit" disabled={mutation.isPending} className="bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600">
+                <Button
+                  type="submit"
+                  disabled={mutation.isPending}
+                  className="bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600"
+                >
                   {mutation.isPending ? (
-                    "Saving..."
+                    "Salvando..."
                   ) : (
                     <>
-                      <Save className="mr-2 h-4 w-4" /> Save Changes
+                      <Save className="mr-2 h-4 w-4" /> Salvar Alterações
                     </>
                   )}
                 </Button>
